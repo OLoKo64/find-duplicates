@@ -7,7 +7,7 @@ def file_list() -> list:
     return glob('**/*', recursive=True)
 
 
-def calculate_file_hash(arr: list) -> tuple:
+def calculate_file_hash(arr: list) -> list:
     hash_dict = []
     for file in arr:
         file_hash = hash_file(file)
@@ -16,7 +16,7 @@ def calculate_file_hash(arr: list) -> tuple:
     return hash_dict
 
 
-def hash_file(filename: str) -> dict:
+def hash_file(filename: str) -> tuple or None:
     debug = False
     hash_obj = sha1()
     try:
@@ -29,17 +29,19 @@ def hash_file(filename: str) -> dict:
         if debug:
             print(f'{filename} is a directory')
         return
-    return (filename, hash_obj.hexdigest())
+    return filename, hash_obj.hexdigest()
 
 
-def find_duplicates(file_list: list) -> dict:
-    hash_list = [hash[1] for hash in file_list]
+def find_duplicates(files: list) -> list or dict:
+    hash_list = [file_hash[1] for file_hash in files]
     duplicate_dict = Counter(hash_list)
-    dupes = [hash_element for hash_element,
-             count in duplicate_dict.items() if count > 1]
+    dupes = [hash_element for hash_element, count in duplicate_dict.items() if count > 1]
     if len(dupes) > 0:
         # TODO - Improve performance of the line below.
-        return {dupe: [file for file in file_list if file[1] == dupe] for dupe in dupes}
+        print()
+        print(f'Found {len(dupes)} files, checking for duplicated files, this may take a while...')
+        print()
+        return {dupe: [file for file in files if file[1] == dupe] for dupe in dupes}
     return dupes
 
 
@@ -52,5 +54,5 @@ def output_dupes(dupes: dict) -> None:
 
 
 if __name__ == '__main__':
-    dict_of_files = calculate_file_hash(file_list())
-    output_dupes(find_duplicates(dict_of_files))
+    list_of_files = calculate_file_hash(file_list())
+    output_dupes(find_duplicates(list_of_files))
